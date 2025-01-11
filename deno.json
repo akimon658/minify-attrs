@@ -1,0 +1,18 @@
+{
+  "name": "@akimon658/minify-attrs",
+  "version": "0.1.0",
+  "exports": "./main.ts",
+  "compilerOptions": {
+    "verbatimModuleSyntax": true
+  },
+  "fmt": {
+    "semiColons": false
+  },
+  "imports": {
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.49",
+    "@std/fs": "jsr:@std/fs@^1.0.8",
+    "@std/path": "jsr:@std/path@^1.0.8",
+    "@types/css-tree": "npm:@types/css-tree@^2.3.10",
+    "css-tree": "npm:css-tree@^3.1.0"
+  }
+}
