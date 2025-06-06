@@ -34,7 +34,7 @@ jobs:
           deno-version: v2.x
 
       - name: Bump version
-        run: deno run --allow-read=deno.json --allow-write=deno.json --allow-run=git jsr:@kellnerd/bump ${{ github.event.inputs.level }} --commit "chore: Release version " --tag v
+        run: 'deno run --allow-read=deno.json --allow-write=deno.json --allow-run=git jsr:@kellnerd/bump ${{ github.event.inputs.level }} --commit "chore: Release version " --tag v'
 
       - name: Push changes
         run: |
