@@ -36,7 +36,7 @@ export default class HTMLProcessor implements Processor {
       }
     }
 
-    return `<!DOCTYPE html>${document.documentElement?.outerHTML}`
+    return `<!DOCTYPE html>${document.documentElement?.outerHTML || ""}`
   }
 
   countAttributes(attrCount: AttrCount, file: string): void {
