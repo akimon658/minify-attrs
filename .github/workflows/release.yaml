@@ -43,7 +43,7 @@ jobs:
 
       - name: Get the latest tag
         id: tag
-        run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
+        run: echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
 
       - name: Publish package
         run: deno publish
