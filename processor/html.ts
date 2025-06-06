@@ -1,11 +1,11 @@
 import { DOMParser } from "@b-fuze/deno-dom"
+import CSSProcessor from "./css.ts"
 import {
   type AttrCount,
   type AttrMap,
   attrsToMinify,
   type Processor,
 } from "./processor.ts"
-import CSSProcessor from "./css.ts"
 
 export default class HTMLProcessor implements Processor {
   cssProcessor = new CSSProcessor()
@@ -29,13 +29,14 @@ export default class HTMLProcessor implements Processor {
           continue
         }
 
-        attr.value = attr.value.split(" ").map((value) =>
-          attrMap[attr.name][value]
-        ).join(" ")
+        attr.value = attr.value
+          .split(" ")
+          .map((value) => attrMap[attr.name][value])
+          .join(" ")
       }
     }
 
-    return document.documentElement?.outerHTML || ""
+    return `<!DOCTYPE html>${document.documentElement?.outerHTML || ""}`
   }
 
   countAttributes(attrCount: AttrCount, file: string): void {

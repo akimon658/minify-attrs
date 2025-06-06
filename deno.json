@@ -9,7 +9,9 @@
     "semiColons": false
   },
   "imports": {
+    "@astral/astral": "jsr:@astral/astral@0.5.0",
     "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.49",
+    "@std/assert": "jsr:@std/assert@^1.0.10",
     "@std/fs": "jsr:@std/fs@^1.0.8",
     "@std/path": "jsr:@std/path@^1.0.8",
     "@types/css-tree": "npm:@types/css-tree@^2.3.10",
