@@ -106,35 +106,26 @@ export default class CSSProcessor implements Processor {
 
   countAttributes(attrCount: AttrCount, file: string): void {
     const ast = parse(file)
+    const incrementAttrCount = (type: "class" | "id", value: string) => {
+      if (!attrCount[type]) {
+        attrCount[type] = {}
+      }
+
+      if (!attrCount[type][value]) {
+        attrCount[type][value] = 0
+      }
+
+      attrCount[type][value]++
+    }
 
     walk(ast, {
       visit: "ClassSelector",
-      enter: (node) => {
-        if (!attrCount.class) {
-          attrCount.class = {}
-        }
-
-        if (!attrCount.class[node.name]) {
-          attrCount.class[node.name] = 0
-        }
-
-        attrCount.class[node.name]++
-      },
+      enter: (node) => incrementAttrCount("class", node.name),
     })
 
     walk(ast, {
       visit: "IdSelector",
-      enter: (node) => {
-        if (!attrCount.id) {
-          attrCount.id = {}
-        }
-
-        if (!attrCount.id[node.name]) {
-          attrCount.id[node.name] = 0
-        }
-
-        attrCount.id[node.name]++
-      },
+      enter: (node) => incrementAttrCount("id", node.name),
     })
 
     walk(ast, {
@@ -142,30 +133,12 @@ export default class CSSProcessor implements Processor {
       enter: (node) => {
         // Handle [class~="value"] and [class="value"] patterns
         if (node.name?.name === "class" && node.value?.type === "String") {
-          if (!attrCount.class) {
-            attrCount.class = {}
-          }
-
-          const value = node.value.value
-          if (!attrCount.class[value]) {
-            attrCount.class[value] = 0
-          }
-
-          attrCount.class[value]++
+          incrementAttrCount("class", node.value.value)
         }
 
         // Handle [id*="value"], [id^="value"], [id$="value"] patterns
         if (node.name?.name === "id" && node.value?.type === "String") {
-          if (!attrCount.id) {
-            attrCount.id = {}
-          }
-
-          const value = node.value.value
-          if (!attrCount.id[value]) {
-            attrCount.id[value] = 0
-          }
-
-          attrCount.id[value]++
+          incrementAttrCount("id", node.value.value)
         }
       },
     })
