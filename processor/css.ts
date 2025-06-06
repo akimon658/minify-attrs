@@ -72,6 +72,11 @@ export default class CSSProcessor implements Processor {
                       if (fullId.endsWith(originalValue)) {
                         matches = true
                       }
+
+                      break
+
+                    default:
+                      console.warn(`Unexpected matcher type: ${matcherType}`)
                   }
 
                   if (matches) {
