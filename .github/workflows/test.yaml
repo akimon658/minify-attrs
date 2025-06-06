@@ -1,0 +1,23 @@
+name: Test
+
+on:
+  pull_request:
+    paths:
+      - 'deno.*'
+      - '**/*.ts'
+      - '**/*.html'
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          cache: true
+          deno-version: v2.x
+
+      - name: Run tests
+        run: deno test --allow-all
