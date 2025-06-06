@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Advanced Where Selector Test</title>
+</head>
+<body>
+  <header class="header">Header</header>
+  <nav class="navigation">Navigation</nav>
+  <main class="main-content">
+    <article class="article">
+      <h1 class="title">Article Title</h1>
+      <p class="paragraph">Article content</p>
+    </article>
+    <aside class="sidebar">Sidebar</aside>
+  </main>
+  <footer class="footer">Footer</footer>
+  <style>
+    /* Multiple classes in where selector */
+    :where(.header, .navigation, .footer) {
+      background-color: #f0f0f0;
+      padding: 1rem;
+    }
+    
+    /* Nested where selectors */
+    :where(.main-content :where(.article .title, .sidebar)) {
+      margin-bottom: 1rem;
+    }
+    
+    /* Complex where selector with pseudo-classes */
+    :where(.article:hover, .sidebar:focus) {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Individual class styles */
+    .header { color: blue; }
+    .navigation { color: green; }
+    .main-content { display: flex; }
+    .article { flex: 1; }
+    .title { font-size: 2rem; }
+    .paragraph { line-height: 1.5; }
+    .sidebar { width: 200px; }
+    .footer { color: gray; }
+  </style>
+</body>
+</html>

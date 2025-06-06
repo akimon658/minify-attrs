@@ -17,10 +17,15 @@ export default class HTMLProcessor implements Processor {
 
     for (const element of elements) {
       if (element.tagName === "STYLE") {
-        element.textContent = this.cssProcessor.applyAttrMap(
-          attrMap,
-          element.textContent,
-        )
+        const styleContent = element.textContent
+
+        if (styleContent) {
+          element.textContent = this.cssProcessor.applyAttrMap(
+            attrMap,
+            styleContent,
+          )
+        }
+
         continue
       }
 
@@ -29,9 +34,13 @@ export default class HTMLProcessor implements Processor {
           continue
         }
 
+        if (!attrMap[attr.name]) {
+          continue
+        }
+
         attr.value = attr.value
           .split(" ")
-          .map((value) => attrMap[attr.name][value])
+          .map((value) => attrMap[attr.name][value] || value)
           .join(" ")
       }
     }
@@ -45,7 +54,11 @@ export default class HTMLProcessor implements Processor {
 
     for (const element of elements) {
       if (element.tagName === "STYLE") {
-        this.cssProcessor.countAttributes(attrCount, element.textContent)
+        const styleContent = element.textContent
+
+        if (styleContent) {
+          this.cssProcessor.countAttributes(attrCount, styleContent)
+        }
         continue
       }
 

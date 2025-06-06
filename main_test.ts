@@ -24,3 +24,30 @@ Deno.test("Basic HTML and CSS", async () => {
 
   assertEquals(want, got)
 })
+
+Deno.test("Where selector with classes", async () => {
+  minify("tests", "dist")
+
+  const want = await screenshot(join("tests", "where.html"))
+  const got = await screenshot(join("dist", "where.html"))
+
+  assertEquals(want, got)
+})
+
+Deno.test("Advanced where selector with complex cases", async () => {
+  minify("tests", "dist")
+
+  const want = await screenshot(join("tests", "advanced-where.html"))
+  const got = await screenshot(join("dist", "advanced-where.html"))
+
+  assertEquals(want, got)
+})
+
+Deno.test("Attribute selectors in where clauses", async () => {
+  minify("tests", "dist")
+
+  const want = await screenshot(join("tests", "attribute-selector.html"))
+  const got = await screenshot(join("dist", "attribute-selector.html"))
+
+  assertEquals(want, got)
+})

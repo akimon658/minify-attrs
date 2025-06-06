@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Where Selector Test</title>
+</head>
+<body>
+  <h1 class="heading">Where Selector Test</h1>
+  <p class="content">This tests where selector with classes.</p>
+  <div class="special">Special content</div>
+  <style>
+    :where(.heading, .content) {
+      font-family: Arial, sans-serif;
+    }
+    :where(.special) {
+      background-color: yellow;
+    }
+    .heading {
+      color: red;
+    }
+    .content {
+      color: blue;
+    }
+    .special {
+      padding: 10px;
+    }
+  </style>
+</body>
+</html>
