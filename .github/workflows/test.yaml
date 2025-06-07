@@ -1,7 +1,7 @@
 name: Test
 
 on:
-  pull_request:
+  push:
     paths:
       - 'deno.*'
       - '**/*.ts'
@@ -29,7 +29,7 @@ jobs:
         run: deno test --allow-all
 
       - name: Commit lockfile changes
-        if: startsWith(github.head_ref, 'renovate/')
+        if: startsWith(github.ref_name, 'renovate/')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
