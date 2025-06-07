@@ -19,5 +19,8 @@ jobs:
           cache: true
           deno-version: v2.x
 
+      - name: Disable AppArmor
+        run: echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+
       - name: Run tests
         run: deno test --allow-all
