@@ -50,23 +50,41 @@ export default class CSSProcessor implements Processor {
     return identifier.replace(/\\(.)/g, "$1")
   }
 
+  /**
+   * Finds the mapped value for a given attribute value, trying both direct mapping
+   * and unescaped mapping.
+   *
+   * @param attrMap The attribute mapping object
+   * @param value The attribute value to find mapping for
+   * @returns The mapped value if found, undefined otherwise
+   */
+  private findMappedValue(
+    attrMap: Record<string, string> | undefined,
+    value: string,
+  ): string | undefined {
+    if (!attrMap) return undefined
+
+    // Try direct mapping first
+    if (attrMap[value]) {
+      return attrMap[value]
+    }
+
+    // Try unescaped mapping
+    const unescapedValue = this.unescapeCSSIdentifier(value)
+
+    return attrMap[unescapedValue]
+  }
+
   applyAttrMap(attrMap: AttrMap, file: string): string {
     const ast = parse(file)
 
     walk(ast, {
       visit: "ClassSelector",
       enter: (node) => {
-        if (attrMap.class) {
-          // Try direct mapping first
-          if (attrMap.class[node.name]) {
-            node.name = attrMap.class[node.name]
-          } else {
-            const unescapedName = this.unescapeCSSIdentifier(node.name)
+        const mappedValue = this.findMappedValue(attrMap.class, node.name)
 
-            if (attrMap.class[unescapedName]) {
-              node.name = attrMap.class[unescapedName]
-            }
-          }
+        if (mappedValue) {
+          node.name = mappedValue
         }
       },
     })
@@ -74,17 +92,10 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "IdSelector",
       enter: (node) => {
-        if (attrMap.id) {
-          // Try direct mapping first
-          if (attrMap.id[node.name]) {
-            node.name = attrMap.id[node.name]
-          } else {
-            const unescapedName = this.unescapeCSSIdentifier(node.name)
+        const mappedValue = this.findMappedValue(attrMap.id, node.name)
 
-            if (attrMap.id[unescapedName]) {
-              node.name = attrMap.id[unescapedName]
-            }
-          }
+        if (mappedValue) {
+          node.name = mappedValue
         }
       },
     })
@@ -96,16 +107,14 @@ export default class CSSProcessor implements Processor {
         if (node.name?.name === "class" && node.value) {
           const originalValue = this.getAttrSelectorValue(node)
 
-          if (originalValue && attrMap.class) {
-            // Try direct mapping first
-            if (attrMap.class[originalValue]) {
-              this.setAttrSelectorValue(node, attrMap.class[originalValue])
-            } else {
-              const unescapedValue = this.unescapeCSSIdentifier(originalValue)
+          if (originalValue) {
+            const mappedValue = this.findMappedValue(
+              attrMap.class,
+              originalValue,
+            )
 
-              if (attrMap.class[unescapedValue]) {
-                this.setAttrSelectorValue(node, attrMap.class[unescapedValue])
-              }
+            if (mappedValue) {
+              this.setAttrSelectorValue(node, mappedValue)
             }
           }
         }
@@ -115,14 +124,7 @@ export default class CSSProcessor implements Processor {
           const originalValue = this.getAttrSelectorValue(node)
 
           if (originalValue) {
-            // Try to find direct mapping first
-            let mappedValue = attrMap.id?.[originalValue]
-
-            if (!mappedValue) {
-              const unescapedValue = this.unescapeCSSIdentifier(originalValue)
-
-              mappedValue = attrMap.id?.[unescapedValue]
-            }
+            const mappedValue = this.findMappedValue(attrMap.id, originalValue)
 
             // For partial matching operators, we need to find the actual HTML id values
             // that contain this substring and use the appropriate minified replacement
@@ -136,13 +138,12 @@ export default class CSSProcessor implements Processor {
               ) {
                 // Find matching id values in the attrMap
                 if (attrMap.id) {
+                  const valueToCheck = this.unescapeCSSIdentifier(originalValue)
+
                   for (
                     const [fullId, minifiedId] of Object.entries(attrMap.id)
                   ) {
                     let matches = false
-                    const valueToCheck = this.unescapeCSSIdentifier(
-                      originalValue,
-                    )
 
                     switch (matcherType) {
                       case "*=":
