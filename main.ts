@@ -6,7 +6,8 @@ import {
   getProcessor,
 } from "./processor/processor.ts"
 
-const validChars = "abcdefghijklmnopqrstuvwxyz0123456789-_"
+const firstCharSet = "abcdefghijklmnopqrstuvwxyz_"
+const restCharSet = `${firstCharSet}0123456789-`
 
 export function minify(inputDir: string, outputDir: string = inputDir): void {
   const attrCount: AttrCount = {}
@@ -36,12 +37,22 @@ export function minify(inputDir: string, outputDir: string = inputDir): void {
       let iLocal = i
       let minifiedValue = ""
 
-      while (iLocal >= validChars.length) {
-        minifiedValue += validChars[iLocal % validChars.length]
-        iLocal = Math.floor(iLocal / validChars.length)
+      if (iLocal < firstCharSet.length) {
+        minifiedValue = firstCharSet[iLocal]
+      } else {
+        iLocal -= firstCharSet.length
+
+        const firstChar = firstCharSet[iLocal % firstCharSet.length]
+
+        iLocal = Math.floor(iLocal / firstCharSet.length)
+        minifiedValue = firstChar
+
+        while (iLocal > 0) {
+          minifiedValue += restCharSet[iLocal % restCharSet.length]
+          iLocal = Math.floor(iLocal / restCharSet.length)
+        }
       }
 
-      minifiedValue += validChars[iLocal]
       attrMap[attr][valuesFreq[i][0]] = minifiedValue
     }
   }
