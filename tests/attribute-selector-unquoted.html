@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Unquoted Attribute Selector Test</title>
+</head>
+<body>
+  <div class="primary button">Primary Button</div>
+  <div class="secondary button">Secondary Button</div>
+  <div class="success message">Success Message</div>
+  <div class="error message">Error Message</div>
+  <div id="main-content">Main Content</div>
+  <div id="sidebar-widget">Sidebar Widget</div>
+  <style>
+    /* Unquoted attribute selectors */
+    [class~=button] {
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+    }
+    
+    [class~=message] {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    
+    [id*=content] {
+      flex: 1;
+    }
+    
+    [id^=sidebar] {
+      width: 300px;
+    }
+    
+    /* Mixed quoted and unquoted */
+    .primary[class~=button], .secondary[class~="button"] {
+      font-weight: bold;
+    }
+    
+    /* Regular class and id selectors */
+    .primary { background-color: blue; }
+    .secondary { background-color: gray; }
+    .success { color: green; }
+    .error { color: red; }
+    #main-content { background: white; }
+    #sidebar-widget { background: #f5f5f5; }
+  </style>
+</body>
+</html>

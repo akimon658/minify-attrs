@@ -51,6 +51,17 @@ Deno.test("Visual regression tests", async (t) => {
     await assertImageEquals(want, got)
   })
 
+  await t.step("Unquoted attribute selectors", async () => {
+    const want = await screenshot(
+      join("tests", "attribute-selector-unquoted.html"),
+    )
+    const got = await screenshot(
+      join("dist", "attribute-selector-unquoted.html"),
+    )
+
+    await assertImageEquals(want, got)
+  })
+
   await t.step(
     "Multiple classes with multi-character minified values",
     async () => {

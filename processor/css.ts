@@ -1,8 +1,43 @@
 // @ts-types="@types/css-tree"
+import type { AttributeSelector } from "css-tree"
 import { generate, parse, walk } from "css-tree"
 import type { AttrCount, AttrMap, Processor } from "./processor.ts"
 
 export default class CSSProcessor implements Processor {
+  private getAttrSelectorValue(node: AttributeSelector) {
+    switch (node.value?.type) {
+      case "String":
+        return node.value.value
+
+      case "Identifier":
+        return node.value.name
+
+      default:
+        console.warn(
+          `Unexpected value type in attribute selector: ${node.value}`,
+        )
+
+        return undefined
+    }
+  }
+
+  private setAttrSelectorValue(node: AttributeSelector, value: string): void {
+    switch (node.value?.type) {
+      case "String":
+        node.value.value = value
+        break
+
+      case "Identifier":
+        node.value.name = value
+        break
+
+      default:
+        console.warn(
+          `Unexpected value type in attribute selector: ${node.value}`,
+        )
+    }
+  }
+
   applyAttrMap(attrMap: AttrMap, file: string): string {
     const ast = parse(file)
 
@@ -27,75 +62,81 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "AttributeSelector",
       enter: (node) => {
-        if (node.name?.name === "class" && node.value?.type === "String") {
-          const originalValue = node.value.value
+        // Handle class attribute selectors (both quoted strings and unquoted identifiers)
+        if (node.name?.name === "class" && node.value) {
+          const originalValue = this.getAttrSelectorValue(node)
 
-          if (attrMap.class && attrMap.class[originalValue]) {
-            node.value.value = attrMap.class[originalValue]
+          if (originalValue && attrMap.class && attrMap.class[originalValue]) {
+            this.setAttrSelectorValue(node, attrMap.class[originalValue])
           }
         }
 
-        if (node.name?.name === "id" && node.value?.type === "String") {
-          const originalValue = node.value.value
+        // Handle id attribute selectors (both quoted strings and unquoted identifiers)
+        if (node.name?.name === "id" && node.value) {
+          const originalValue = this.getAttrSelectorValue(node)
 
-          // For partial matching operators, we need to find the actual HTML id values
-          // that contain this substring and use the appropriate minified replacement
-          if (node.matcher) {
-            const matcherType = node.matcher
+          if (originalValue) {
+            // For partial matching operators, we need to find the actual HTML id values
+            // that contain this substring and use the appropriate minified replacement
+            if (node.matcher) {
+              const matcherType = node.matcher
 
-            if (
-              matcherType === "*=" ||
-              matcherType === "^=" ||
-              matcherType === "$="
-            ) {
-              // Find matching id values in the attrMap
-              if (attrMap.id) {
-                for (const [fullId, minifiedId] of Object.entries(attrMap.id)) {
-                  let matches = false
+              if (
+                matcherType === "*=" ||
+                matcherType === "^=" ||
+                matcherType === "$="
+              ) {
+                // Find matching id values in the attrMap
+                if (attrMap.id) {
+                  for (
+                    const [fullId, minifiedId] of Object.entries(attrMap.id)
+                  ) {
+                    let matches = false
 
-                  switch (matcherType) {
-                    case "*=":
-                      if (fullId.includes(originalValue)) {
-                        matches = true
-                      }
+                    switch (matcherType) {
+                      case "*=":
+                        if (fullId.includes(originalValue)) {
+                          matches = true
+                        }
 
+                        break
+
+                      case "^=":
+                        if (fullId.startsWith(originalValue)) {
+                          matches = true
+                        }
+
+                        break
+
+                      case "$=":
+                        if (fullId.endsWith(originalValue)) {
+                          matches = true
+                        }
+
+                        break
+
+                      default:
+                        console.warn(`Unexpected matcher type: ${matcherType}`)
+                    }
+
+                    if (matches) {
+                      // For partial matching, we should replace with the minified full value
+                      // since the HTML id will be completely replaced
+                      this.setAttrSelectorValue(node, minifiedId)
+                      // Change the matcher to exact match since we're now using the full minified value
+                      node.matcher = "="
                       break
-
-                    case "^=":
-                      if (fullId.startsWith(originalValue)) {
-                        matches = true
-                      }
-
-                      break
-
-                    case "$=":
-                      if (fullId.endsWith(originalValue)) {
-                        matches = true
-                      }
-
-                      break
-
-                    default:
-                      console.warn(`Unexpected matcher type: ${matcherType}`)
-                  }
-
-                  if (matches) {
-                    // For partial matching, we should replace with the minified full value
-                    // since the HTML id will be completely replaced
-                    node.value.value = minifiedId
-                    // Change the matcher to exact match since we're now using the full minified value
-                    node.matcher = "="
-                    break
+                    }
                   }
                 }
+              } else if (attrMap.id && attrMap.id[originalValue]) {
+                // For exact matching (= or ~=), use direct replacement
+                this.setAttrSelectorValue(node, attrMap.id[originalValue])
               }
             } else if (attrMap.id && attrMap.id[originalValue]) {
-              // For exact matching (= or ~=), use direct replacement
-              node.value.value = attrMap.id[originalValue]
+              // Default case (exact matching)
+              this.setAttrSelectorValue(node, attrMap.id[originalValue])
             }
-          } else if (attrMap.id && attrMap.id[originalValue]) {
-            // Default case (exact matching)
-            node.value.value = attrMap.id[originalValue]
           }
         }
       },
@@ -131,14 +172,22 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "AttributeSelector",
       enter: (node) => {
-        // Handle [class~="value"] and [class="value"] patterns
-        if (node.name?.name === "class" && node.value?.type === "String") {
-          incrementAttrCount("class", node.value.value)
+        // Handle [class~="value"] and [class="value"] patterns (both quoted and unquoted)
+        if (node.name?.name === "class" && node.value) {
+          const value = this.getAttrSelectorValue(node)
+
+          if (value) {
+            incrementAttrCount("class", value)
+          }
         }
 
-        // Handle [id*="value"], [id^="value"], [id$="value"] patterns
-        if (node.name?.name === "id" && node.value?.type === "String") {
-          incrementAttrCount("id", node.value.value)
+        // Handle [id*="value"], [id^="value"], [id$="value"] patterns (both quoted and unquoted)
+        if (node.name?.name === "id" && node.value) {
+          const value = this.getAttrSelectorValue(node)
+
+          if (value) {
+            incrementAttrCount("id", value)
+          }
         }
       },
     })
