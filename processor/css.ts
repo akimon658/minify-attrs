@@ -51,8 +51,9 @@ export default class CSSProcessor implements Processor {
   }
 
   /**
-   * Finds the mapped value for a given attribute value, trying both direct mapping
-   * and unescaped mapping.
+   * Finds the mapped value for a given attribute value.
+   * Since countAttributes always stores unescaped values as keys,
+   * we should always look up using unescaped values.
    *
    * @param attrMap The attribute mapping object
    * @param value The attribute value to find mapping for
@@ -62,17 +63,11 @@ export default class CSSProcessor implements Processor {
     attrMap: Record<string, string> | undefined,
     value: string,
   ): string | undefined {
-    if (!attrMap) return undefined
-
-    // Try direct mapping first
-    if (attrMap[value]) {
-      return attrMap[value]
+    if (!attrMap) {
+      return undefined
     }
 
-    // Try unescaped mapping
-    const unescapedValue = this.unescapeCSSIdentifier(value)
-
-    return attrMap[unescapedValue]
+    return attrMap[this.unescapeCSSIdentifier(value)]
   }
 
   applyAttrMap(attrMap: AttrMap, file: string): string {
