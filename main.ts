@@ -45,9 +45,14 @@ export function minify(inputDir: string, outputDir: string = inputDir): void {
 
         // Generate multi-character names
         let length = 2
+        // Calculate total combinations for current length
+        // For length=2: 27 × 38^1 = 1,026 combinations (aa, ab, ..., _-)
+        // For length=3: 27 × 38^2 = 38,988 combinations (aaa, aab, ..., _--)
         let totalCombos = firstCharSet.length *
           Math.pow(restCharSet.length, length - 1)
 
+        // Find the appropriate length by skipping over complete sets
+        // of shorter combinations until we find the right length
         while (remaining >= totalCombos) {
           remaining -= totalCombos
           length++
