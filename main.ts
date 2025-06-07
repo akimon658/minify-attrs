@@ -34,22 +34,41 @@ export function minify(inputDir: string, outputDir: string = inputDir): void {
     )
 
     for (let i = 0; i < valuesFreq.length; i++) {
-      let iLocal = i
       let minifiedValue = ""
 
-      if (iLocal < firstCharSet.length) {
-        minifiedValue = firstCharSet[iLocal]
+      if (i < firstCharSet.length) {
+        // Single character: a, b, c, ..., z, _
+        minifiedValue = firstCharSet[i]
       } else {
-        iLocal -= firstCharSet.length
+        // Multi-character: aa, ab, ac, ...
+        let remaining = i - firstCharSet.length
 
-        const firstChar = firstCharSet[iLocal % firstCharSet.length]
+        // Generate multi-character names
+        let length = 2
+        let totalCombos = firstCharSet.length *
+          Math.pow(restCharSet.length, length - 1)
 
-        iLocal = Math.floor(iLocal / firstCharSet.length)
-        minifiedValue = firstChar
+        while (remaining >= totalCombos) {
+          remaining -= totalCombos
+          length++
+          totalCombos = firstCharSet.length *
+            Math.pow(restCharSet.length, length - 1)
+        }
 
-        while (iLocal > 0) {
-          minifiedValue += restCharSet[iLocal % restCharSet.length]
-          iLocal = Math.floor(iLocal / restCharSet.length)
+        // Generate the name for this length
+        const firstCharIndex = Math.floor(
+          remaining / Math.pow(restCharSet.length, length - 1),
+        )
+        minifiedValue = firstCharSet[firstCharIndex]
+
+        remaining = remaining % Math.pow(restCharSet.length, length - 1)
+
+        for (let j = length - 2; j >= 0; j--) {
+          const charIndex = Math.floor(
+            remaining / Math.pow(restCharSet.length, j),
+          )
+          minifiedValue += restCharSet[charIndex]
+          remaining = remaining % Math.pow(restCharSet.length, j)
         }
       }
 
