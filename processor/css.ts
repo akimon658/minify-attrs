@@ -38,6 +38,18 @@ export default class CSSProcessor implements Processor {
     }
   }
 
+  /**
+   * Unescapes CSS identifiers by removing backslash escaping.
+   * CSS special characters like : [ ] ( ) , \ are escaped with backslashes in CSS
+   * but appear unescaped in HTML class/id attributes.
+   *
+   * @param identifier The CSS identifier to unescape
+   * @returns The unescaped identifier
+   */
+  private unescapeCSSIdentifier(identifier: string): string {
+    return identifier.replace(/\\(.)/g, "$1")
+  }
+
   applyAttrMap(attrMap: AttrMap, file: string): string {
     const ast = parse(file)
 
@@ -49,10 +61,8 @@ export default class CSSProcessor implements Processor {
           if (attrMap.class[node.name]) {
             node.name = attrMap.class[node.name]
           } else {
-            // Try to find a mapping by unescaping CSS identifiers
-            // CSS special characters like : [ ] ( ) , are escaped with backslashes in CSS
-            // but appear unescaped in HTML class attributes
-            const unescapedName = node.name.replace(/\\(.)/g, "$1")
+            const unescapedName = this.unescapeCSSIdentifier(node.name)
+
             if (attrMap.class[unescapedName]) {
               node.name = attrMap.class[unescapedName]
             }
@@ -69,8 +79,8 @@ export default class CSSProcessor implements Processor {
           if (attrMap.id[node.name]) {
             node.name = attrMap.id[node.name]
           } else {
-            // Try to find a mapping by unescaping CSS identifiers
-            const unescapedName = node.name.replace(/\\(.)/g, "$1")
+            const unescapedName = this.unescapeCSSIdentifier(node.name)
+
             if (attrMap.id[unescapedName]) {
               node.name = attrMap.id[unescapedName]
             }
@@ -91,8 +101,8 @@ export default class CSSProcessor implements Processor {
             if (attrMap.class[originalValue]) {
               this.setAttrSelectorValue(node, attrMap.class[originalValue])
             } else {
-              // Try to find a mapping by unescaping CSS identifiers
-              const unescapedValue = originalValue.replace(/\\(.)/g, "$1")
+              const unescapedValue = this.unescapeCSSIdentifier(originalValue)
+
               if (attrMap.class[unescapedValue]) {
                 this.setAttrSelectorValue(node, attrMap.class[unescapedValue])
               }
@@ -108,9 +118,9 @@ export default class CSSProcessor implements Processor {
             // Try to find direct mapping first
             let mappedValue = attrMap.id?.[originalValue]
 
-            // If not found, try unescaped version
             if (!mappedValue) {
-              const unescapedValue = originalValue.replace(/\\(.)/g, "$1")
+              const unescapedValue = this.unescapeCSSIdentifier(originalValue)
+
               mappedValue = attrMap.id?.[unescapedValue]
             }
 
@@ -130,7 +140,9 @@ export default class CSSProcessor implements Processor {
                     const [fullId, minifiedId] of Object.entries(attrMap.id)
                   ) {
                     let matches = false
-                    const valueToCheck = originalValue.replace(/\\(.)/g, "$1")
+                    const valueToCheck = this.unescapeCSSIdentifier(
+                      originalValue,
+                    )
 
                     switch (matcherType) {
                       case "*=":
@@ -201,8 +213,8 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "ClassSelector",
       enter: (node) => {
-        // Count using the unescaped version to match HTML class attributes
-        const unescapedName = node.name.replace(/\\(.)/g, "$1")
+        const unescapedName = this.unescapeCSSIdentifier(node.name)
+
         incrementAttrCount("class", unescapedName)
       },
     })
@@ -210,8 +222,8 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "IdSelector",
       enter: (node) => {
-        // Count using the unescaped version to match HTML id attributes
-        const unescapedName = node.name.replace(/\\(.)/g, "$1")
+        const unescapedName = this.unescapeCSSIdentifier(node.name)
+
         incrementAttrCount("id", unescapedName)
       },
     })
@@ -224,8 +236,8 @@ export default class CSSProcessor implements Processor {
           const value = this.getAttrSelectorValue(node)
 
           if (value) {
-            // Count using the unescaped version to match HTML class attributes
-            const unescapedValue = value.replace(/\\(.)/g, "$1")
+            const unescapedValue = this.unescapeCSSIdentifier(value)
+
             incrementAttrCount("class", unescapedValue)
           }
         }
@@ -235,8 +247,8 @@ export default class CSSProcessor implements Processor {
           const value = this.getAttrSelectorValue(node)
 
           if (value) {
-            // Count using the unescaped version to match HTML id attributes
-            const unescapedValue = value.replace(/\\(.)/g, "$1")
+            const unescapedValue = this.unescapeCSSIdentifier(value)
+
             incrementAttrCount("id", unescapedValue)
           }
         }
