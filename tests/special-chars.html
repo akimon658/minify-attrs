@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Special Characters in Class Names</title>
+  <style>
+    .lg\:grid-cols-\[repeat\(3\,max-content\)\] {
+      display: grid;
+      grid-template-columns: repeat(3, max-content);
+      gap: 1rem;
+      background-color: lightblue;
+      padding: 1rem;
+    }
+    
+    .sm\:text-\[14px\] {
+      font-size: 14px;
+      color: darkblue;
+    }
+    
+    .hover\:bg-\[rgb\(255\,0\,0\)\]:hover {
+      background-color: rgb(255, 0, 0);
+    }
+    
+    .before\:\[content\:\'Hello\'\]::before {
+      content: 'Hello';
+      color: green;
+      font-weight: bold;
+    }
+    
+    .min-w-\[calc\(100\%-20px\)\] {
+      min-width: calc(100% - 20px);
+      border: 2px solid purple;
+      margin: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="lg:grid-cols-[repeat(3,max-content)]">
+    <div class="sm:text-[14px] before:[content:'Hello']">Item 1</div>
+    <div class="sm:text-[14px] hover:bg-[rgb(255,0,0)]">Item 2</div>
+    <div class="sm:text-[14px] min-w-[calc(100%-20px)]">Item 3</div>
+  </div>
+  
+  <div class="min-w-[calc(100%-20px)]">
+    <p class="sm:text-[14px]">This paragraph uses special characters in class names.</p>
+  </div>
+</body>
+</html>

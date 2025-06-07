@@ -44,8 +44,19 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "ClassSelector",
       enter: (node) => {
-        if (attrMap.class && attrMap.class[node.name]) {
-          node.name = attrMap.class[node.name]
+        if (attrMap.class) {
+          // Try direct mapping first
+          if (attrMap.class[node.name]) {
+            node.name = attrMap.class[node.name]
+          } else {
+            // Try to find a mapping by unescaping CSS identifiers
+            // CSS special characters like : [ ] ( ) , are escaped with backslashes in CSS
+            // but appear unescaped in HTML class attributes
+            const unescapedName = node.name.replace(/\\(.)/g, "$1")
+            if (attrMap.class[unescapedName]) {
+              node.name = attrMap.class[unescapedName]
+            }
+          }
         }
       },
     })
@@ -53,8 +64,17 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "IdSelector",
       enter: (node) => {
-        if (attrMap.id && attrMap.id[node.name]) {
-          node.name = attrMap.id[node.name]
+        if (attrMap.id) {
+          // Try direct mapping first
+          if (attrMap.id[node.name]) {
+            node.name = attrMap.id[node.name]
+          } else {
+            // Try to find a mapping by unescaping CSS identifiers
+            const unescapedName = node.name.replace(/\\(.)/g, "$1")
+            if (attrMap.id[unescapedName]) {
+              node.name = attrMap.id[unescapedName]
+            }
+          }
         }
       },
     })
@@ -66,8 +86,17 @@ export default class CSSProcessor implements Processor {
         if (node.name?.name === "class" && node.value) {
           const originalValue = this.getAttrSelectorValue(node)
 
-          if (originalValue && attrMap.class && attrMap.class[originalValue]) {
-            this.setAttrSelectorValue(node, attrMap.class[originalValue])
+          if (originalValue && attrMap.class) {
+            // Try direct mapping first
+            if (attrMap.class[originalValue]) {
+              this.setAttrSelectorValue(node, attrMap.class[originalValue])
+            } else {
+              // Try to find a mapping by unescaping CSS identifiers
+              const unescapedValue = originalValue.replace(/\\(.)/g, "$1")
+              if (attrMap.class[unescapedValue]) {
+                this.setAttrSelectorValue(node, attrMap.class[unescapedValue])
+              }
+            }
           }
         }
 
@@ -76,6 +105,15 @@ export default class CSSProcessor implements Processor {
           const originalValue = this.getAttrSelectorValue(node)
 
           if (originalValue) {
+            // Try to find direct mapping first
+            let mappedValue = attrMap.id?.[originalValue]
+
+            // If not found, try unescaped version
+            if (!mappedValue) {
+              const unescapedValue = originalValue.replace(/\\(.)/g, "$1")
+              mappedValue = attrMap.id?.[unescapedValue]
+            }
+
             // For partial matching operators, we need to find the actual HTML id values
             // that contain this substring and use the appropriate minified replacement
             if (node.matcher) {
@@ -92,24 +130,25 @@ export default class CSSProcessor implements Processor {
                     const [fullId, minifiedId] of Object.entries(attrMap.id)
                   ) {
                     let matches = false
+                    const valueToCheck = originalValue.replace(/\\(.)/g, "$1")
 
                     switch (matcherType) {
                       case "*=":
-                        if (fullId.includes(originalValue)) {
+                        if (fullId.includes(valueToCheck)) {
                           matches = true
                         }
 
                         break
 
                       case "^=":
-                        if (fullId.startsWith(originalValue)) {
+                        if (fullId.startsWith(valueToCheck)) {
                           matches = true
                         }
 
                         break
 
                       case "$=":
-                        if (fullId.endsWith(originalValue)) {
+                        if (fullId.endsWith(valueToCheck)) {
                           matches = true
                         }
 
@@ -129,13 +168,13 @@ export default class CSSProcessor implements Processor {
                     }
                   }
                 }
-              } else if (attrMap.id && attrMap.id[originalValue]) {
+              } else if (mappedValue) {
                 // For exact matching (= or ~=), use direct replacement
-                this.setAttrSelectorValue(node, attrMap.id[originalValue])
+                this.setAttrSelectorValue(node, mappedValue)
               }
-            } else if (attrMap.id && attrMap.id[originalValue]) {
+            } else if (mappedValue) {
               // Default case (exact matching)
-              this.setAttrSelectorValue(node, attrMap.id[originalValue])
+              this.setAttrSelectorValue(node, mappedValue)
             }
           }
         }
@@ -161,12 +200,20 @@ export default class CSSProcessor implements Processor {
 
     walk(ast, {
       visit: "ClassSelector",
-      enter: (node) => incrementAttrCount("class", node.name),
+      enter: (node) => {
+        // Count using the unescaped version to match HTML class attributes
+        const unescapedName = node.name.replace(/\\(.)/g, "$1")
+        incrementAttrCount("class", unescapedName)
+      },
     })
 
     walk(ast, {
       visit: "IdSelector",
-      enter: (node) => incrementAttrCount("id", node.name),
+      enter: (node) => {
+        // Count using the unescaped version to match HTML id attributes
+        const unescapedName = node.name.replace(/\\(.)/g, "$1")
+        incrementAttrCount("id", unescapedName)
+      },
     })
 
     walk(ast, {
@@ -177,7 +224,9 @@ export default class CSSProcessor implements Processor {
           const value = this.getAttrSelectorValue(node)
 
           if (value) {
-            incrementAttrCount("class", value)
+            // Count using the unescaped version to match HTML class attributes
+            const unescapedValue = value.replace(/\\(.)/g, "$1")
+            incrementAttrCount("class", unescapedValue)
           }
         }
 
@@ -186,7 +235,9 @@ export default class CSSProcessor implements Processor {
           const value = this.getAttrSelectorValue(node)
 
           if (value) {
-            incrementAttrCount("id", value)
+            // Count using the unescaped version to match HTML id attributes
+            const unescapedValue = value.replace(/\\(.)/g, "$1")
+            incrementAttrCount("id", unescapedValue)
           }
         }
       },
