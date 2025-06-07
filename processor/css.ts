@@ -38,14 +38,48 @@ export default class CSSProcessor implements Processor {
     }
   }
 
+  /**
+   * Unescapes CSS identifiers by removing backslash escaping.
+   * CSS special characters like : [ ] ( ) , \ are escaped with backslashes in CSS
+   * but appear unescaped in HTML class/id attributes.
+   *
+   * @param identifier The CSS identifier to unescape
+   * @returns The unescaped identifier
+   */
+  private unescapeCSSIdentifier(identifier: string): string {
+    return identifier.replace(/\\(.)/g, "$1")
+  }
+
+  /**
+   * Finds the mapped value for a given attribute value.
+   * Since countAttributes always stores unescaped values as keys,
+   * we should always look up using unescaped values.
+   *
+   * @param attrMap The attribute mapping object
+   * @param value The attribute value to find mapping for
+   * @returns The mapped value if found, undefined otherwise
+   */
+  private findMappedValue(
+    attrMap: Record<string, string> | undefined,
+    value: string,
+  ): string | undefined {
+    if (!attrMap) {
+      return undefined
+    }
+
+    return attrMap[this.unescapeCSSIdentifier(value)]
+  }
+
   applyAttrMap(attrMap: AttrMap, file: string): string {
     const ast = parse(file)
 
     walk(ast, {
       visit: "ClassSelector",
       enter: (node) => {
-        if (attrMap.class && attrMap.class[node.name]) {
-          node.name = attrMap.class[node.name]
+        const mappedValue = this.findMappedValue(attrMap.class, node.name)
+
+        if (mappedValue) {
+          node.name = mappedValue
         }
       },
     })
@@ -53,8 +87,10 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "IdSelector",
       enter: (node) => {
-        if (attrMap.id && attrMap.id[node.name]) {
-          node.name = attrMap.id[node.name]
+        const mappedValue = this.findMappedValue(attrMap.id, node.name)
+
+        if (mappedValue) {
+          node.name = mappedValue
         }
       },
     })
@@ -66,8 +102,15 @@ export default class CSSProcessor implements Processor {
         if (node.name?.name === "class" && node.value) {
           const originalValue = this.getAttrSelectorValue(node)
 
-          if (originalValue && attrMap.class && attrMap.class[originalValue]) {
-            this.setAttrSelectorValue(node, attrMap.class[originalValue])
+          if (originalValue) {
+            const mappedValue = this.findMappedValue(
+              attrMap.class,
+              originalValue,
+            )
+
+            if (mappedValue) {
+              this.setAttrSelectorValue(node, mappedValue)
+            }
           }
         }
 
@@ -76,6 +119,8 @@ export default class CSSProcessor implements Processor {
           const originalValue = this.getAttrSelectorValue(node)
 
           if (originalValue) {
+            const mappedValue = this.findMappedValue(attrMap.id, originalValue)
+
             // For partial matching operators, we need to find the actual HTML id values
             // that contain this substring and use the appropriate minified replacement
             if (node.matcher) {
@@ -88,6 +133,8 @@ export default class CSSProcessor implements Processor {
               ) {
                 // Find matching id values in the attrMap
                 if (attrMap.id) {
+                  const valueToCheck = this.unescapeCSSIdentifier(originalValue)
+
                   for (
                     const [fullId, minifiedId] of Object.entries(attrMap.id)
                   ) {
@@ -95,21 +142,21 @@ export default class CSSProcessor implements Processor {
 
                     switch (matcherType) {
                       case "*=":
-                        if (fullId.includes(originalValue)) {
+                        if (fullId.includes(valueToCheck)) {
                           matches = true
                         }
 
                         break
 
                       case "^=":
-                        if (fullId.startsWith(originalValue)) {
+                        if (fullId.startsWith(valueToCheck)) {
                           matches = true
                         }
 
                         break
 
                       case "$=":
-                        if (fullId.endsWith(originalValue)) {
+                        if (fullId.endsWith(valueToCheck)) {
                           matches = true
                         }
 
@@ -129,13 +176,13 @@ export default class CSSProcessor implements Processor {
                     }
                   }
                 }
-              } else if (attrMap.id && attrMap.id[originalValue]) {
+              } else if (mappedValue) {
                 // For exact matching (= or ~=), use direct replacement
-                this.setAttrSelectorValue(node, attrMap.id[originalValue])
+                this.setAttrSelectorValue(node, mappedValue)
               }
-            } else if (attrMap.id && attrMap.id[originalValue]) {
+            } else if (mappedValue) {
               // Default case (exact matching)
-              this.setAttrSelectorValue(node, attrMap.id[originalValue])
+              this.setAttrSelectorValue(node, mappedValue)
             }
           }
         }
@@ -148,25 +195,32 @@ export default class CSSProcessor implements Processor {
   countAttributes(attrCount: AttrCount, file: string): void {
     const ast = parse(file)
     const incrementAttrCount = (type: "class" | "id", value: string) => {
+      // Always unescape CSS identifiers to match HTML attributes
+      const unescapedValue = this.unescapeCSSIdentifier(value)
+
       if (!attrCount[type]) {
         attrCount[type] = {}
       }
 
-      if (!attrCount[type][value]) {
-        attrCount[type][value] = 0
+      if (!attrCount[type][unescapedValue]) {
+        attrCount[type][unescapedValue] = 0
       }
 
-      attrCount[type][value]++
+      attrCount[type][unescapedValue]++
     }
 
     walk(ast, {
       visit: "ClassSelector",
-      enter: (node) => incrementAttrCount("class", node.name),
+      enter: (node) => {
+        incrementAttrCount("class", node.name)
+      },
     })
 
     walk(ast, {
       visit: "IdSelector",
-      enter: (node) => incrementAttrCount("id", node.name),
+      enter: (node) => {
+        incrementAttrCount("id", node.name)
+      },
     })
 
     walk(ast, {

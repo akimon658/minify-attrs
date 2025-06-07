@@ -72,5 +72,12 @@ Deno.test("Visual regression tests", async (t) => {
     },
   )
 
+  await t.step("CSS special characters in class names", async () => {
+    const want = await screenshot(join("tests", "special-chars.html"))
+    const got = await screenshot(join("dist", "special-chars.html"))
+
+    await assertImageEquals(want, got)
+  })
+
   await browser.close()
 })
