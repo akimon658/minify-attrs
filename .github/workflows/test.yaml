@@ -19,5 +19,11 @@ jobs:
           cache: true
           deno-version: v2.x
 
+      # Disabling AppArmor is necessary for tests that require unprivileged user namespaces,
+      # which are restricted by default. This step is safe because the CI environment is ephemeral
+      # and isolated. Ensure this step is only executed in secure environments.
+      - name: Disable AppArmor
+        run: echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+
       - name: Run tests
         run: deno test --allow-all

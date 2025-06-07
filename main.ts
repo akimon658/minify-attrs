@@ -6,8 +6,7 @@ import {
   getProcessor,
 } from "./processor/processor.ts"
 
-const validChars =
-  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+const validChars = "abcdefghijklmnopqrstuvwxyz0123456789-_"
 
 export function minify(inputDir: string, outputDir: string = inputDir): void {
   const attrCount: AttrCount = {}
