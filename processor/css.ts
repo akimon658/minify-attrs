@@ -1,8 +1,36 @@
 // @ts-types="@types/css-tree"
+import type { AttributeSelector } from "css-tree"
 import { generate, parse, walk } from "css-tree"
 import type { AttrCount, AttrMap, Processor } from "./processor.ts"
 
 export default class CSSProcessor implements Processor {
+  private getAttrSelectorValue(node: AttributeSelector) {
+    switch (node.value?.type) {
+      case "String":
+        return node.value.value
+
+      case "Identifier":
+        return node.value.name
+    }
+  }
+
+  private setAttrSelectorValue(node: AttributeSelector, value: string): void {
+    switch (node.value?.type) {
+      case "String":
+        node.value.value = value
+        break
+
+      case "Identifier":
+        node.value.name = value
+        break
+
+      default:
+        console.warn(
+          `Unexpected value type in attribute selector: ${node.value}`,
+        )
+    }
+  }
+
   applyAttrMap(attrMap: AttrMap, file: string): string {
     const ast = parse(file)
 
@@ -29,30 +57,16 @@ export default class CSSProcessor implements Processor {
       enter: (node) => {
         // Handle class attribute selectors (both quoted strings and unquoted identifiers)
         if (node.name?.name === "class" && node.value) {
-          let originalValue: string
+          const originalValue = this.getAttrSelectorValue(node)
 
-          if (node.value.type === "String") {
-            originalValue = node.value.value
-            if (attrMap.class && attrMap.class[originalValue]) {
-              node.value.value = attrMap.class[originalValue]
-            }
-          } else if (node.value.type === "Identifier") {
-            originalValue = node.value.name
-            if (attrMap.class && attrMap.class[originalValue]) {
-              node.value.name = attrMap.class[originalValue]
-            }
+          if (originalValue && attrMap.class && attrMap.class[originalValue]) {
+            this.setAttrSelectorValue(node, attrMap.class[originalValue])
           }
         }
 
         // Handle id attribute selectors (both quoted strings and unquoted identifiers)
         if (node.name?.name === "id" && node.value) {
-          let originalValue: string | undefined
-
-          if (node.value.type === "String") {
-            originalValue = node.value.value
-          } else if (node.value.type === "Identifier") {
-            originalValue = node.value.name
-          }
+          const originalValue = this.getAttrSelectorValue(node)
 
           if (originalValue) {
             // For partial matching operators, we need to find the actual HTML id values
@@ -101,11 +115,7 @@ export default class CSSProcessor implements Processor {
                     if (matches) {
                       // For partial matching, we should replace with the minified full value
                       // since the HTML id will be completely replaced
-                      if (node.value.type === "String") {
-                        node.value.value = minifiedId
-                      } else if (node.value.type === "Identifier") {
-                        node.value.name = minifiedId
-                      }
+                      this.setAttrSelectorValue(node, minifiedId)
                       // Change the matcher to exact match since we're now using the full minified value
                       node.matcher = "="
                       break
@@ -114,19 +124,11 @@ export default class CSSProcessor implements Processor {
                 }
               } else if (attrMap.id && attrMap.id[originalValue]) {
                 // For exact matching (= or ~=), use direct replacement
-                if (node.value.type === "String") {
-                  node.value.value = attrMap.id[originalValue]
-                } else if (node.value.type === "Identifier") {
-                  node.value.name = attrMap.id[originalValue]
-                }
+                this.setAttrSelectorValue(node, attrMap.id[originalValue])
               }
             } else if (attrMap.id && attrMap.id[originalValue]) {
               // Default case (exact matching)
-              if (node.value.type === "String") {
-                node.value.value = attrMap.id[originalValue]
-              } else if (node.value.type === "Identifier") {
-                node.value.name = attrMap.id[originalValue]
-              }
+              this.setAttrSelectorValue(node, attrMap.id[originalValue])
             }
           }
         }
@@ -165,19 +167,19 @@ export default class CSSProcessor implements Processor {
       enter: (node) => {
         // Handle [class~="value"] and [class="value"] patterns (both quoted and unquoted)
         if (node.name?.name === "class" && node.value) {
-          if (node.value.type === "String") {
-            incrementAttrCount("class", node.value.value)
-          } else if (node.value.type === "Identifier") {
-            incrementAttrCount("class", node.value.name)
+          const value = this.getAttrSelectorValue(node)
+
+          if (value) {
+            incrementAttrCount("class", value)
           }
         }
 
         // Handle [id*="value"], [id^="value"], [id$="value"] patterns (both quoted and unquoted)
         if (node.name?.name === "id" && node.value) {
-          if (node.value.type === "String") {
-            incrementAttrCount("id", node.value.value)
-          } else if (node.value.type === "Identifier") {
-            incrementAttrCount("id", node.value.name)
+          const value = this.getAttrSelectorValue(node)
+
+          if (value) {
+            incrementAttrCount("id", value)
           }
         }
       },
