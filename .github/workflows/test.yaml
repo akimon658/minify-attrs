@@ -27,3 +27,19 @@ jobs:
 
       - name: Run tests
         run: deno test --allow-all
+
+      - name: Commit lockfile changes
+        if: startsWith(github.head_ref, 'renovate/')
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Check if there are changes to deno.lock
+          if git diff --quiet deno.lock; then
+            echo "No lockfile changes detected"
+          else
+            echo "Lockfile changes detected, committing..."
+            git add deno.lock
+            git commit -m "chore: Update deno.lock"
+            git push
+          fi
