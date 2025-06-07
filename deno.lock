@@ -1,5 +1,5 @@
 {
-  "version": "4",
+  "version": "5",
   "specifiers": {
     "jsr:@astral/astral@0.5.0": "0.5.0",
     "jsr:@b-fuze/deno-dom@0.1.49": "0.1.49",
@@ -9,6 +9,7 @@
     "jsr:@std/assert@~0.213.1": "0.213.1",
     "jsr:@std/async@1": "1.0.9",
     "jsr:@std/encoding@0.213.1": "0.213.1",
+    "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/fmt@0.213.1": "0.213.1",
     "jsr:@std/fmt@1.0.3": "1.0.3",
     "jsr:@std/fs@0.213.1": "0.213.1",
@@ -51,7 +52,7 @@
     "@denosaurs/plug@1.0.3": {
       "integrity": "b010544e386bea0ff3a1d05e0c88f704ea28cbd4d753439c2f1ee021a85d4640",
       "dependencies": [
-        "jsr:@std/encoding",
+        "jsr:@std/encoding@0.213.1",
         "jsr:@std/fmt@0.213.1",
         "jsr:@std/fs@0.213.1",
         "jsr:@std/path@0.213.1"
@@ -71,6 +72,9 @@
     },
     "@std/encoding@0.213.1": {
       "integrity": "fcbb6928713dde941a18ca5db88ca1544d0755ec8fb20fe61e2dc8144b390c62"
+    },
+    "@std/encoding@1.0.10": {
+      "integrity": "8783c6384a2d13abd5e9e87a7ae0520a30e9f56aeeaa3bdf910a3eaaf5c811a1"
     },
     "@std/fmt@0.213.1": {
       "integrity": "a06d31777566d874b9c856c10244ac3e6b660bdec4c82506cd46be052a1082c3"
@@ -133,6 +137,7 @@
       "jsr:@astral/astral@0.5.0",
       "jsr:@b-fuze/deno-dom@0.1.49",
       "jsr:@std/assert@^1.0.10",
+      "jsr:@std/encoding@^1.0.10",
       "jsr:@std/fs@^1.0.8",
       "jsr:@std/path@^1.0.8",
       "npm:@types/css-tree@^2.3.10",
