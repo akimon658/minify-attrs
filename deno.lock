@@ -1,13 +1,13 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@astral/astral@0.5.0": "0.5.0",
+    "jsr:@astral/astral@0.5.3": "0.5.3",
     "jsr:@b-fuze/deno-dom@0.1.49": "0.1.49",
     "jsr:@deno-library/progress@^1.5.1": "1.5.1",
     "jsr:@denosaurs/plug@1.0.3": "1.0.3",
     "jsr:@std/assert@^1.0.10": "1.0.10",
     "jsr:@std/assert@~0.213.1": "0.213.1",
-    "jsr:@std/async@1": "1.0.9",
+    "jsr:@std/async@1": "1.0.13",
     "jsr:@std/encoding@0.213.1": "0.213.1",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/fmt@0.213.1": "0.213.1",
@@ -21,13 +21,13 @@
     "jsr:@std/path@1": "1.0.8",
     "jsr:@std/path@^1.0.8": "1.0.8",
     "jsr:@std/path@~0.213.1": "0.213.1",
-    "jsr:@zip-js/zip-js@^2.7.52": "2.7.54",
+    "jsr:@zip-js/zip-js@^2.7.52": "2.7.62",
     "npm:@types/css-tree@^2.3.10": "2.3.10",
     "npm:css-tree@^3.1.0": "3.1.0"
   },
   "jsr": {
-    "@astral/astral@0.5.0": {
-      "integrity": "e5d8d665b1817c84f912af36bccba12c5953d3b369901c276d799c3b7d03e08f",
+    "@astral/astral@0.5.3": {
+      "integrity": "d6a4628313d8be99aac0f51005c1dc090fa3b4c6b5c8335c26a52d4842aa1276",
       "dependencies": [
         "jsr:@deno-library/progress",
         "jsr:@std/async",
@@ -67,8 +67,8 @@
         "jsr:@std/internal"
       ]
     },
-    "@std/async@1.0.9": {
-      "integrity": "c6472fd0623b3f3daae023cdf7ca5535e1b721dfbf376562c0c12b3fb4867f91"
+    "@std/async@1.0.13": {
+      "integrity": "1d76ca5d324aef249908f7f7fe0d39aaf53198e5420604a59ab5c035adc97c96"
     },
     "@std/encoding@0.213.1": {
       "integrity": "fcbb6928713dde941a18ca5db88ca1544d0755ec8fb20fe61e2dc8144b390c62"
@@ -110,8 +110,8 @@
     "@std/path@1.0.8": {
       "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
     },
-    "@zip-js/zip-js@2.7.54": {
-      "integrity": "a28b93b56a6cb2ed0f613355b2e9120ea9f6e9703dd6ae1bbc0088cfa3fef692"
+    "@zip-js/zip-js@2.7.62": {
+      "integrity": "11cbe0746fa1e52e6e0a601c89ba97365f16e38a07f139b9d9914f988aec9081"
     }
   },
   "npm": {
@@ -134,7 +134,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@astral/astral@0.5.0",
+      "jsr:@astral/astral@0.5.3",
       "jsr:@b-fuze/deno-dom@0.1.49",
       "jsr:@std/assert@^1.0.10",
       "jsr:@std/encoding@^1.0.10",
