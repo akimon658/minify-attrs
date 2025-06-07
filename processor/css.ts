@@ -27,16 +27,34 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "AttributeSelector",
       enter: (node) => {
-        if (node.name?.name === "class" && node.value?.type === "String") {
-          const originalValue = node.value.value
+        // Handle class attribute selectors (both quoted strings and unquoted identifiers)
+        if (node.name?.name === "class" && node.value) {
+          let originalValue: string
 
-          if (attrMap.class && attrMap.class[originalValue]) {
-            node.value.value = attrMap.class[originalValue]
+          if (node.value.type === "String") {
+            originalValue = node.value.value
+            if (attrMap.class && attrMap.class[originalValue]) {
+              node.value.value = attrMap.class[originalValue]
+            }
+          } else if (node.value.type === "Identifier") {
+            originalValue = node.value.name
+            if (attrMap.class && attrMap.class[originalValue]) {
+              node.value.name = attrMap.class[originalValue]
+            }
           }
         }
 
-        if (node.name?.name === "id" && node.value?.type === "String") {
-          const originalValue = node.value.value
+        // Handle id attribute selectors (both quoted strings and unquoted identifiers)
+        if (node.name?.name === "id" && node.value) {
+          let originalValue: string
+
+          if (node.value.type === "String") {
+            originalValue = node.value.value
+          } else if (node.value.type === "Identifier") {
+            originalValue = node.value.name
+          } else {
+            return
+          }
 
           // For partial matching operators, we need to find the actual HTML id values
           // that contain this substring and use the appropriate minified replacement
@@ -82,7 +100,11 @@ export default class CSSProcessor implements Processor {
                   if (matches) {
                     // For partial matching, we should replace with the minified full value
                     // since the HTML id will be completely replaced
-                    node.value.value = minifiedId
+                    if (node.value.type === "String") {
+                      node.value.value = minifiedId
+                    } else if (node.value.type === "Identifier") {
+                      node.value.name = minifiedId
+                    }
                     // Change the matcher to exact match since we're now using the full minified value
                     node.matcher = "="
                     break
@@ -91,11 +113,19 @@ export default class CSSProcessor implements Processor {
               }
             } else if (attrMap.id && attrMap.id[originalValue]) {
               // For exact matching (= or ~=), use direct replacement
-              node.value.value = attrMap.id[originalValue]
+              if (node.value.type === "String") {
+                node.value.value = attrMap.id[originalValue]
+              } else if (node.value.type === "Identifier") {
+                node.value.name = attrMap.id[originalValue]
+              }
             }
           } else if (attrMap.id && attrMap.id[originalValue]) {
             // Default case (exact matching)
-            node.value.value = attrMap.id[originalValue]
+            if (node.value.type === "String") {
+              node.value.value = attrMap.id[originalValue]
+            } else if (node.value.type === "Identifier") {
+              node.value.name = attrMap.id[originalValue]
+            }
           }
         }
       },
@@ -131,14 +161,22 @@ export default class CSSProcessor implements Processor {
     walk(ast, {
       visit: "AttributeSelector",
       enter: (node) => {
-        // Handle [class~="value"] and [class="value"] patterns
-        if (node.name?.name === "class" && node.value?.type === "String") {
-          incrementAttrCount("class", node.value.value)
+        // Handle [class~="value"] and [class="value"] patterns (both quoted and unquoted)
+        if (node.name?.name === "class" && node.value) {
+          if (node.value.type === "String") {
+            incrementAttrCount("class", node.value.value)
+          } else if (node.value.type === "Identifier") {
+            incrementAttrCount("class", node.value.name)
+          }
         }
 
-        // Handle [id*="value"], [id^="value"], [id$="value"] patterns
-        if (node.name?.name === "id" && node.value?.type === "String") {
-          incrementAttrCount("id", node.value.value)
+        // Handle [id*="value"], [id^="value"], [id$="value"] patterns (both quoted and unquoted)
+        if (node.name?.name === "id" && node.value) {
+          if (node.value.type === "String") {
+            incrementAttrCount("id", node.value.value)
+          } else if (node.value.type === "Identifier") {
+            incrementAttrCount("id", node.value.name)
+          }
         }
       },
     })
