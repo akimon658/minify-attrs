@@ -11,6 +11,13 @@ export default class CSSProcessor implements Processor {
 
       case "Identifier":
         return node.value.name
+
+      default:
+        console.warn(
+          `Unexpected value type in attribute selector: ${node.value}`,
+        )
+
+        return undefined
     }
   }
 
