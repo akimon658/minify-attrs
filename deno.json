@@ -1,6 +1,6 @@
 {
   "name": "@akimon658/minify-attrs",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "exports": "./main.ts",
   "compilerOptions": {
     "verbatimModuleSyntax": true
