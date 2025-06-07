@@ -46,85 +46,87 @@ export default class CSSProcessor implements Processor {
 
         // Handle id attribute selectors (both quoted strings and unquoted identifiers)
         if (node.name?.name === "id" && node.value) {
-          let originalValue: string
+          let originalValue: string | undefined
 
           if (node.value.type === "String") {
             originalValue = node.value.value
           } else if (node.value.type === "Identifier") {
             originalValue = node.value.name
-          } else {
-            return
           }
 
-          // For partial matching operators, we need to find the actual HTML id values
-          // that contain this substring and use the appropriate minified replacement
-          if (node.matcher) {
-            const matcherType = node.matcher
+          if (originalValue) {
+            // For partial matching operators, we need to find the actual HTML id values
+            // that contain this substring and use the appropriate minified replacement
+            if (node.matcher) {
+              const matcherType = node.matcher
 
-            if (
-              matcherType === "*=" ||
-              matcherType === "^=" ||
-              matcherType === "$="
-            ) {
-              // Find matching id values in the attrMap
-              if (attrMap.id) {
-                for (const [fullId, minifiedId] of Object.entries(attrMap.id)) {
-                  let matches = false
+              if (
+                matcherType === "*=" ||
+                matcherType === "^=" ||
+                matcherType === "$="
+              ) {
+                // Find matching id values in the attrMap
+                if (attrMap.id) {
+                  for (
+                    const [fullId, minifiedId] of Object.entries(attrMap.id)
+                  ) {
+                    let matches = false
 
-                  switch (matcherType) {
-                    case "*=":
-                      if (fullId.includes(originalValue)) {
-                        matches = true
-                      }
+                    switch (matcherType) {
+                      case "*=":
+                        if (fullId.includes(originalValue)) {
+                          matches = true
+                        }
 
-                      break
+                        break
 
-                    case "^=":
-                      if (fullId.startsWith(originalValue)) {
-                        matches = true
-                      }
+                      case "^=":
+                        if (fullId.startsWith(originalValue)) {
+                          matches = true
+                        }
 
-                      break
+                        break
 
-                    case "$=":
-                      if (fullId.endsWith(originalValue)) {
-                        matches = true
-                      }
+                      case "$=":
+                        if (fullId.endsWith(originalValue)) {
+                          matches = true
+                        }
 
-                      break
+                        break
 
-                    default:
-                      console.warn(`Unexpected matcher type: ${matcherType}`)
-                  }
-
-                  if (matches) {
-                    // For partial matching, we should replace with the minified full value
-                    // since the HTML id will be completely replaced
-                    if (node.value.type === "String") {
-                      node.value.value = minifiedId
-                    } else if (node.value.type === "Identifier") {
-                      node.value.name = minifiedId
+                      default:
+                        console.warn(`Unexpected matcher type: ${matcherType}`)
                     }
-                    // Change the matcher to exact match since we're now using the full minified value
-                    node.matcher = "="
-                    break
+
+                    if (matches) {
+                      // For partial matching, we should replace with the minified full value
+                      // since the HTML id will be completely replaced
+                      if (node.value.type === "String") {
+                        node.value.value = minifiedId
+                      } else if (node.value.type === "Identifier") {
+                        node.value.name = minifiedId
+                      }
+                      // Change the matcher to exact match since we're now using the full minified value
+                      node.matcher = "="
+                      break
+                    }
                   }
+                }
+              } else if (attrMap.id && attrMap.id[originalValue]) {
+                // For exact matching (= or ~=), use direct replacement
+                if (node.value.type === "String") {
+                  node.value.value = attrMap.id[originalValue]
+                } else if (node.value.type === "Identifier") {
+                  node.value.name = attrMap.id[originalValue]
                 }
               }
             } else if (attrMap.id && attrMap.id[originalValue]) {
-              // For exact matching (= or ~=), use direct replacement
+              // Default case (exact matching)
               if (node.value.type === "String") {
                 node.value.value = attrMap.id[originalValue]
               } else if (node.value.type === "Identifier") {
                 node.value.name = attrMap.id[originalValue]
               }
-            }
-          } else if (attrMap.id && attrMap.id[originalValue]) {
-            // Default case (exact matching)
-            if (node.value.type === "String") {
-              node.value.value = attrMap.id[originalValue]
-            } else if (node.value.type === "Identifier") {
-              node.value.name = attrMap.id[originalValue]
             }
           }
         }
