@@ -199,32 +199,31 @@ export default class CSSProcessor implements Processor {
   countAttributes(attrCount: AttrCount, file: string): void {
     const ast = parse(file)
     const incrementAttrCount = (type: "class" | "id", value: string) => {
+      // Always unescape CSS identifiers to match HTML attributes
+      const unescapedValue = this.unescapeCSSIdentifier(value)
+
       if (!attrCount[type]) {
         attrCount[type] = {}
       }
 
-      if (!attrCount[type][value]) {
-        attrCount[type][value] = 0
+      if (!attrCount[type][unescapedValue]) {
+        attrCount[type][unescapedValue] = 0
       }
 
-      attrCount[type][value]++
+      attrCount[type][unescapedValue]++
     }
 
     walk(ast, {
       visit: "ClassSelector",
       enter: (node) => {
-        const unescapedName = this.unescapeCSSIdentifier(node.name)
-
-        incrementAttrCount("class", unescapedName)
+        incrementAttrCount("class", node.name)
       },
     })
 
     walk(ast, {
       visit: "IdSelector",
       enter: (node) => {
-        const unescapedName = this.unescapeCSSIdentifier(node.name)
-
-        incrementAttrCount("id", unescapedName)
+        incrementAttrCount("id", node.name)
       },
     })
 
@@ -236,9 +235,7 @@ export default class CSSProcessor implements Processor {
           const value = this.getAttrSelectorValue(node)
 
           if (value) {
-            const unescapedValue = this.unescapeCSSIdentifier(value)
-
-            incrementAttrCount("class", unescapedValue)
+            incrementAttrCount("class", value)
           }
         }
 
@@ -247,9 +244,7 @@ export default class CSSProcessor implements Processor {
           const value = this.getAttrSelectorValue(node)
 
           if (value) {
-            const unescapedValue = this.unescapeCSSIdentifier(value)
-
-            incrementAttrCount("id", unescapedValue)
+            incrementAttrCount("id", value)
           }
         }
       },
