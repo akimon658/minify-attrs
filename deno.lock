@@ -14,12 +14,14 @@
     "jsr:@std/fmt@1.0.3": "1.0.3",
     "jsr:@std/fs@0.213.1": "0.213.1",
     "jsr:@std/fs@1": "1.0.8",
+    "jsr:@std/fs@^1.0.18": "1.0.18",
     "jsr:@std/fs@^1.0.8": "1.0.8",
     "jsr:@std/internal@^1.0.6": "1.0.8",
     "jsr:@std/io@0.225.0": "0.225.0",
     "jsr:@std/path@0.213.1": "0.213.1",
     "jsr:@std/path@1": "1.0.8",
     "jsr:@std/path@^1.0.8": "1.0.8",
+    "jsr:@std/path@^1.1.0": "1.1.0",
     "jsr:@std/path@~0.213.1": "0.213.1",
     "jsr:@zip-js/zip-js@^2.7.52": "2.7.62",
     "npm:@types/css-tree@^2.3.10": "2.3.10",
@@ -95,6 +97,12 @@
         "jsr:@std/path@^1.0.8"
       ]
     },
+    "@std/fs@1.0.18": {
+      "integrity": "24bcad99eab1af4fde75e05da6e9ed0e0dce5edb71b7e34baacf86ffe3969f3a",
+      "dependencies": [
+        "jsr:@std/path@^1.1.0"
+      ]
+    },
     "@std/internal@1.0.8": {
       "integrity": "fc66e846d8d38a47cffd274d80d2ca3f0de71040f855783724bb6b87f60891f5"
     },
@@ -109,6 +117,9 @@
     },
     "@std/path@1.0.8": {
       "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
+    },
+    "@std/path@1.1.0": {
+      "integrity": "ddc94f8e3c275627281cbc23341df6b8bcc874d70374f75fec2533521e3d6886"
     },
     "@zip-js/zip-js@2.7.62": {
       "integrity": "11cbe0746fa1e52e6e0a601c89ba97365f16e38a07f139b9d9914f988aec9081"
@@ -138,7 +149,7 @@
       "jsr:@b-fuze/deno-dom@0.1.49",
       "jsr:@std/assert@^1.0.13",
       "jsr:@std/encoding@^1.0.10",
-      "jsr:@std/fs@^1.0.8",
+      "jsr:@std/fs@^1.0.18",
       "jsr:@std/path@^1.0.8",
       "npm:@types/css-tree@^2.3.10",
       "npm:css-tree@^3.1.0"
