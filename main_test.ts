@@ -51,3 +51,12 @@ Deno.test("Attribute selectors in where clauses", async () => {
 
   assertEquals(want, got)
 })
+
+Deno.test("Multiple classes with multi-character minified values", async () => {
+  minify("tests", "dist")
+
+  const want = await screenshot(join("tests", "many-classes.html"))
+  const got = await screenshot(join("dist", "many-classes.html"))
+
+  assertEquals(want, got)
+})
